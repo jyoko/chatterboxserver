@@ -1,0 +1,18 @@
+{
+  "name": "chatterbox",
+  "version": "0.1.2",
+  "main": "server/basic-server.js",
+  "author": "",
+  "license": "",
+  "scripts": {
+    "test": "mocha server/spec"
+  },
+  "devDependencies": {
+    "mocha": "^1.21.4",
+    "request": "^2.34.0",
+    "chai": "^1.9.0"
+  },
+  "dependencies": {
+    "underscore": "^1.8.3"
+  }
+}
