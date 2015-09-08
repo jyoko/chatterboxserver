@@ -1,5 +1,5 @@
 # ignore config
-./client/envconfig.js
+client/env/config.js
 
 ### OSX ###
 .DS_Store

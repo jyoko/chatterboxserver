@@ -41,6 +41,7 @@ var app = {
       data: JSON.stringify(message),
       contentType: 'application/json',
       success: function(data) {
+        console.log(data);
         console.log('Message sent');
       },
       error: function(data) {
@@ -53,6 +54,7 @@ var app = {
       url: this.server,
       type: 'GET',
       success: function(data) {
+        console.log(data);
         if (app.time>1000) app.time=1000;
         var addedRoom = data.results.slice(0);
         addedRoom.unshift({roomname:'View All'});
