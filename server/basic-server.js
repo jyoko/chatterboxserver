@@ -12,12 +12,16 @@ console.log("Listening on http://" + ip + ":" + port);
 server.listen(port, ip);
 var socket = io.listen(server);
 
+var storage = [];
 socket.on('connection', function(client) {
 
-  socket.emit('server-response', 'Hi there!');
+  socket.emit('new-message', {results: storage});
 
-  client.on('postMessage', function(data) {
-
+  client.on('send-message', function(data) {
+      data.objectId = storage.length.toString();
+      storage[data.objectId] = data; 
+      console.log('Received : '+data);
+      socket.emit('new-message', {results: storage});
   });
 
 });

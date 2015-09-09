@@ -11,7 +11,6 @@ var requestHandler = function(request, response) {
   
   console.log("Serving request type " + request.method + " for url " + request.url);
 
-  // Removed else to 404
   if(request.url.match( /^\/classes\// )) {
 
     // These can just be separate IFs - easier to read
@@ -38,7 +37,8 @@ var requestHandler = function(request, response) {
       sendResponse(response, "for CORS");
     }
 
-  // If we aren't expressly routing to AJAX handler above, then:
+  // If we aren't expressly routing to AJAX handler above,
+  // then try to load the file
   } else {
 
     // setup our fileName
@@ -46,6 +46,17 @@ var requestHandler = function(request, response) {
     var fileName = request.url;
     if(fileName === '/') fileName = '/index.html';
 
+/*  // security addition
+    fileName = decodeURIComponent(fileName);
+    var parsedURL = require('url').parse(fileName);
+    var path = require('path');
+    fileName = parsedURL.pathname;
+    fileName = path.join(ROOT_DIR,fileName);
+    if (fileName.substr(0,ROOT_DIR.length)!==ROOT_DIR) {
+      response.writeHead(403);
+      response.end('Nope');
+    }
+*/
     // read our file WARNING: UNSAFE!!!!
     fs.readFile(ROOT_DIR+fileName, function(err, data){
       // if there's an error loading the file this exists
