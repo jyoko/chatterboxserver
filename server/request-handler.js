@@ -1,41 +1,77 @@
 // adding objectId because client needs it
 var storage = [];
+var fs = require('fs');
 var requestHandler = function(request, response) {
-   // var headers = defaultCorsHeaders;
   
-   var sendResponse = function(response, data, statusCode) {
+  var sendResponse = function(response, data, statusCode) {
     statusCode = statusCode || 200;
     response.writeHead(statusCode, defaultCorsHeaders);    
     response.end(JSON.stringify(data));
-   }
+  }
+  
+  console.log("Serving request type " + request.method + " for url " + request.url);
 
-   
-   console.log("Serving request type " + request.method + " for url " + request.url);
-   // request.url.substr(0,9) === '/classes/'
-   if(request.url.match( /^\/classes\// )) {
+  // Removed else to 404
+  if(request.url.match( /^\/classes\// )) {
 
-     if(request.method === 'GET') {
-       sendResponse(response, { results: storage } );
-     } else if(request.method === 'POST') {      
-       var body = "";
-       request.on('data', function(pieces) {
-        body+=pieces;      
-       });
+    // These can just be separate IFs - easier to read
 
-       request.on('end', function() {
-         var post = JSON.parse(body);
-         post.objectId = storage.length;
-         storage[post.objectId] = post; 
+    if (request.method === 'GET') {
+      sendResponse(response, { results: storage } );
+    }
+
+    if (request.method === 'POST') {
+      var body = "";
+      request.on('data', function(pieces) {
+       body+=pieces;      
+      });
+
+      request.on('end', function() {
+        var post = JSON.parse(body);
+        post.objectId = storage.length.toString();
+        storage[post.objectId] = post; 
         sendResponse(response, "This is a post",201);
-       })
-      } else if (request.method === 'OPTIONS') 
-      {
-        sendResponse(response, "for CORS");
+      });
+    }
+
+    if (request.method === 'OPTIONS') {
+      sendResponse(response, "for CORS");
+    }
+
+  // If we aren't expressly routing to AJAX handler above, then:
+  } else {
+
+    // setup our fileName
+    var ROOT_DIR = '../client';
+    var fileName = request.url;
+    if(fileName === '/') fileName = '/index.html';
+
+    // read our file WARNING: UNSAFE!!!!
+    fs.readFile(ROOT_DIR+fileName, function(err, data){
+      // if there's an error loading the file this exists
+      // as a Node Error object
+      if (err) {
+
+        // this means the file doesn't exist
+        if (err.code==='ENOENT') {
+          response.writeHead(404);
+          response.end('404: File not found');
+
+        // in all other cases we'll return 500: Internal Server Error
+        } else {
+          response.writeHead(500);
+          response.end('500: Error loading');
+        }
+        // and for good measure log the entire error to the console
+        console.log(err);
       }
 
-    } else {
-      sendResponse(response,'Not found',404);
-    }
+      // leave out headers for now
+      // we'd have to detect the file type to serve them correctly
+      response.writeHead(200);
+      response.end(data);
+    });
+  }
 };
 
 var defaultCorsHeaders = {
@@ -47,46 +83,4 @@ var defaultCorsHeaders = {
 };
 
 module.exports = requestHandler;
-
-// var fs = require("fs");
-// var ROOT_DIR = '../client';
-
-// var requestHandler = function(request, response) {
- 
-//   var fileName = request.url;
-//   console.log("Serving request type " + request.method + " for url " + request.url);
-//   if(fileName === '/') fileName = '/index.html';
-
-//   // The outgoing status.
-//   // var statusCode = 200;
-//   var headers = defaultCorsHeaders;
-
-//   if (fileName==='/chatterbox') {
-
-//     // chatterboxAPI
-//     // return {results: [array of message]}
-//     // each message is 
-//     // {
-//     //  createdAt: 'date'
-//     // }
-
-//   } else {
-
-//     fs.exists(ROOT_DIR+fileName, function(exists) {
-//       if (!exists) {
-//         response.writeHead(404);
-//         response.end('Not here');
-//       }
-//     });
-
-//     fs.readFile(ROOT_DIR+fileName, function(err, data){
-//       if (err) console.log(err);
-//       // response.write(data);
-//       response.writeHead(200, headers);
-//       response.end(data);
-//     });
-
-//   } 
-
-// };
 
